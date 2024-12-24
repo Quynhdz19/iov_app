@@ -1,62 +1,127 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../drawer/drawer_menu.dart';
+import '../viewmodels/home_viewmodel.dart';
 import '../widgets/custom_app_bar.dart';
-import '../widgets/group_header.dart';
 import '../widgets/inspection_item_card.dart';
-import '../widgets/add_button.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  // Lưu trữ các điều kiện tìm kiếm
+  String? vinNo;
+  String? fromDate;
+  String? toDate;
+  String? jobStatus;
+
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<HomeViewModel>(context, listen: false).fetchJobs();
+    });
+
+    // Thêm sự kiện cuộn để tải thêm dữ liệu
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200) {
+        Provider.of<HomeViewModel>(context, listen: false).fetchMoreJobs();
+      }
+    });
+  }
+  void _onSearch(Map<String, String> criteria) {
+    setState(() {
+      vinNo = criteria['search'];
+      fromDate = criteria['from_date'];
+      toDate = criteria['to_date'];
+      jobStatus = criteria['status'];
+      print(vinNo);
+    });
+
+    Provider.of<HomeViewModel>(context, listen: false)
+        .fetchJobsWithCriteria(criteria);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> mockData = [
-      {
-        'dateTime': '3/15/2023 10:57:13 PM',
-        'items': [
-          {
-            'imageUrl': 'https://file.kelleybluebookimages.com/kbb/base/evox/CP/14385/2021-Kia-Seltos-side_14385_001_2400x1800_GAG.png?crop=1.0xw:0.90xh;left,top&downsize=110:*',
-            'vehicleNumber': '70-1220',
-            'description': 'ติดตั้งใหม่',
-          },
-        ],
-      },
-      {
-        'dateTime': '3/15/2023 7:20:15 PM',
-        'items': [
-          {
-            'imageUrl': 'https://file.kelleybluebookimages.com/kbb/base/evox/CP/14385/2021-Kia-Seltos-side_14385_001_2400x1800_GAG.png?crop=1.0xw:0.90xh;left,top&downsize=110:*',
-            'vehicleNumber': '70-1220',
-            'description': 'ซ่อมแซม/แก้ไข',
-          },
-          {
-            'imageUrl': 'https://file.kelleybluebookimages.com/kbb/base/evox/CP/14385/2021-Kia-Seltos-side_14385_001_2400x1800_GAG.png?crop=1.0xw:0.90xh;left,top&downsize=110:*',
-            'vehicleNumber': '86-9908',
-            'description': 'ติดตั้งใหม่',
-          },
-        ],
-      },
-    ];
+    final homeViewModel = Provider.of<HomeViewModel>(context);
+
 
     return Scaffold(
-      appBar: CustomAppBar(),
-      body: ListView.builder(
-        itemCount: mockData.length,
+      appBar: CustomAppBar(onSearch: _onSearch),
+      drawer: const DrawerMenu(userEmail: 'balloon28th@gmail.com'),
+      body: homeViewModel.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : homeViewModel.errorMessage != null
+          ? Center(
+        child: Text(
+          'Error: ${homeViewModel.errorMessage}',
+          style: const TextStyle(color: Colors.red),
+        ),
+      )
+          : ListView.builder(
+        controller: _scrollController,
+        itemCount: homeViewModel.groupedJobs.length +
+            (homeViewModel.isFetchingMore ? 1 : 0),
         itemBuilder: (context, index) {
-          final group = mockData[index];
+          if (index == homeViewModel.groupedJobs.length) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final group = homeViewModel.groupedJobs[index];
+          final date = group['date'];
+          final items =
+          group['items'] as List<Map<String, dynamic>>;
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              GroupHeader(
-                dateTime: group['dateTime'],
-                itemCount: group['items']?.length,
+              // Hiển thị ngày
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                    vertical: 8.0, horizontal: 16.0),
+                child: Row(
+                  children: [
+                    Text(
+                      date,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    CircleAvatar(
+                      backgroundColor: Colors.grey[300],
+                      radius: 12,
+                      child: Text(
+                        '${items.length}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              ...group['items']?.map<Widget>((item) {
+              // Hiển thị danh sách item trong ngày
+              ...items.map((item) {
                 return InspectionItemCard(
-                  imageUrl: item['imageUrl'],
-                  vehicleNumber: item['vehicleNumber'],
-                  description: item['description'],
+                  imageUrl:
+                  'https://file.kelleybluebookimages.com/kbb/base/evox/CP/14385/2021-Kia-Seltos-side_14385_001_2400x1800_GAG.png?crop=1.0xw:0.90xh;left,top&downsize=110:*', // Placeholder image
+                  vehicleNumber: item['vin_no'],
+                  description: item['job_status'],
                   onTap: () {
-                    Navigator.pushReplacementNamed(context, '/inspectionForm');
+                    Navigator.pushReplacementNamed(
+                        context, '/inspectionForm');
                   },
                 );
               }).toList(),
@@ -65,5 +130,11 @@ class HomeScreen extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 }

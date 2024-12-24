@@ -8,7 +8,7 @@ class BaseService {
   static final String _baseUrl = dotenv.env['API_URL'] ?? '';
 
   Future<Map<String, String>> _getHeaders() async {
-    final token = StorageUtil.getString('auth_token');
+    final token = StorageUtil.getString('access_token');
     return {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',

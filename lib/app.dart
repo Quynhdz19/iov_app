@@ -33,7 +33,7 @@ class App extends StatelessWidget {
           return supportedLocales.first;
         },
         debugShowCheckedModeBanner: false,
-        title: "${AppLocalizations.of(context)?.translate('welcome')}",
+        title: 'iov app',
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),

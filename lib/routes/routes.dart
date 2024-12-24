@@ -5,9 +5,11 @@ import '../features/inspectionform/screens/inspection_form.dart';
 import 'auth_guard.dart';
 
 final Map<String, WidgetBuilder> appRoutes = {
-  '/': (context) => const HomeScreen(),
-  '/inspectionForm': (context) => const InspectionForm(),
-  // '/home': (context) => AuthGuard(
-  //   child: const HomeScreen(),
-  // ),
+  '/': (context) => const LoginScreen(),
+  '/home': (context) => const AuthGuard(
+    child: HomeScreen(),
+  ),
+  '/inspectionForm': (context) => const AuthGuard(
+    child: InspectionForm(),
+  ),
 };

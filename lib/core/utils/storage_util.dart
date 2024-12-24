@@ -24,7 +24,7 @@ class StorageUtil {
   }
 
   static Future<bool> hasToken() async {
-    final token = _preferences?.getString('auth_token');
+    final token = _preferences?.getString('access_token');
     return token != null && token.isNotEmpty;
   }
 }

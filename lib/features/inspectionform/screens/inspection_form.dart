@@ -1,13 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../../home/widgets/custom_app_bar.dart';
+import '../../../core/utils/navigation_utils.dart';
+import '../../home/screens/home_screen.dart';
 import '../widgets/custom_add_field.dart';
 import '../widgets/custom_date_picker.dart';
 import '../widgets/custom_dropdown_field.dart';
 import '../widgets/custom_location_field.dart';
 import '../widgets/custom_photo_field.dart';
 import '../widgets/custom_text_field.dart';
+import '../widgets/inspection_app_bar.dart';
 
 class InspectionForm extends StatelessWidget {
   const InspectionForm({super.key});
@@ -15,7 +17,15 @@ class InspectionForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(),
+      appBar: InspectionAppBar(
+        title: 'Inspections Form',
+        onBackPressed: () {
+          navigateToRouteWithAnimationBack(
+            context: context,
+            routeName: '/home', // Route đã khai báo
+          );
+        },
+      ),
       body: const SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
         child: Column(
@@ -43,3 +53,4 @@ class InspectionForm extends StatelessWidget {
     );
   }
 }
+

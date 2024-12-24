@@ -1,0 +1,13 @@
+{
+  "welcome_back": "Welcome Back!",
+  "login_account": "Login to your account",
+  "username": "Username",
+  "password": "Password",
+  "login": "Login",
+  "error": "Error",
+  "loading": "Loading...",
+  "inspections": "Inspections",
+  "shipment": "Shipment",
+  "sale_order": "Sale Order",
+  "email": "Email"
+}
