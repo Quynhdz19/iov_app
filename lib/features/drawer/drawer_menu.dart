@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iov_app/core/constants/app_colors.dart';
 import '../../../core/local/app_localizations.dart';
+import '../../core/utils/navigation_utils.dart';
 
 class DrawerMenu extends StatelessWidget {
   final String userEmail;
@@ -38,21 +39,20 @@ class DrawerMenu extends StatelessWidget {
             leading: const Icon(Icons.assignment),
             title: Text(AppLocalizations.of(context).translate('inspections')),
             onTap: () {
-              // Xử lý khi nhấn vào Inspections
+              navigateToRouteWithAnimationTo(
+                context:  context,
+                routeName:'/home',
+              );
             },
           ),
           ListTile(
-            leading: const Icon(Icons.local_shipping),
-            title: Text(AppLocalizations.of(context).translate('shipment')),
+            leading: const Icon(Icons.stacked_bar_chart),
+            title: Text(AppLocalizations.of(context).translate('Kpi')),
             onTap: () {
-              // Xử lý khi nhấn vào Shipment
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.shopping_cart),
-            title: Text(AppLocalizations.of(context).translate('sale_order')),
-            onTap: () {
-              // Xử lý khi nhấn vào Sale Order
+              navigateToRouteWithAnimationTo(
+                context:  context,
+                routeName:'/kpi',
+              );
             },
           ),
           const Spacer(),
@@ -65,7 +65,10 @@ class DrawerMenu extends StatelessWidget {
             title: Text(userEmail),
             trailing: const Icon(Icons.keyboard_arrow_down),
             onTap: () {
-              // Mở cài đặt tài khoản
+              navigateToRouteWithAnimationTo(
+                  context:  context,
+                  routeName:'/detailsScreen',
+              );
             },
           ),
         ],

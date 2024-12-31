@@ -87,9 +87,7 @@ class LoginScreen extends StatelessWidget {
                   final username = usernameController.text;
                   final password = passwordController.text;
 
-                  print('abc');
                   final success = await authViewModel.login('technician_01', 'Hanoi@123');
-                  print(success);
                   if (success) {
                     Navigator.pushReplacementNamed(context, '/home');
                   } else {

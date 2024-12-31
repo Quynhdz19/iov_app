@@ -10,7 +10,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(onSearch);
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,

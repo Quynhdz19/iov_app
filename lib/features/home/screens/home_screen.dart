@@ -42,7 +42,6 @@ class _HomeScreenState extends State<HomeScreen> {
       fromDate = criteria['from_date'];
       toDate = criteria['to_date'];
       jobStatus = criteria['status'];
-      print(vinNo);
     });
 
     Provider.of<HomeViewModel>(context, listen: false)
@@ -115,13 +114,12 @@ class _HomeScreenState extends State<HomeScreen> {
               // Hiển thị danh sách item trong ngày
               ...items.map((item) {
                 return InspectionItemCard(
+                  job_id: item['job_id'],
                   imageUrl:
                   'https://file.kelleybluebookimages.com/kbb/base/evox/CP/14385/2021-Kia-Seltos-side_14385_001_2400x1800_GAG.png?crop=1.0xw:0.90xh;left,top&downsize=110:*', // Placeholder image
                   vehicleNumber: item['vin_no'],
                   description: item['job_status'],
                   onTap: () {
-                    Navigator.pushReplacementNamed(
-                        context, '/inspectionForm');
                   },
                 );
               }).toList(),

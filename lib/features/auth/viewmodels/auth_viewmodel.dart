@@ -78,4 +78,26 @@ class AuthViewModel with ChangeNotifier {
     _user = null; // Xóa thông tin user khỏi state
     notifyListeners();
   }
+
+  // Hàm kiểm tra token hết hạn
+  Future<bool> isTokenExpired() async {
+    final token = StorageUtil.getString('access_token');
+    if (token == null) {
+      return true; // Không có token
+    }
+
+    try {
+      final payload = _decodeJWT(token);
+      final exp = payload['exp'];
+      if (exp == null) {
+        return true; // Token không có hạn
+      }
+
+      final expiryDate = DateTime.fromMillisecondsSinceEpoch(exp * 1000);
+      return DateTime.now().isAfter(expiryDate); // Kiểm tra token hết hạn
+    } catch (e) {
+      return true; // Lỗi khi giải mã token
+    }
+  }
+
 }

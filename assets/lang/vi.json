@@ -6,8 +6,9 @@
   "login": "Đăng nhập",
   "error": "Có lỗi xảy ra",
   "loading": "Đang tải...",
-  "inspections": "Kiểm tra",
+  "inspections": "Danh sách inspection",
   "shipment": "Giao hàng",
   "sale_order": "Đơn bán",
-  "email": "Email"
+  "email": "Email",
+  "Kpi": "Kpi"
 }

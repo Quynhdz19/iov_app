@@ -38,7 +38,19 @@ class App extends StatelessWidget {
           primarySwatch: Colors.blue,
         ),
         initialRoute: '/',
-        routes: appRoutes,
+        onGenerateRoute: (RouteSettings settings) {
+          final routeName = settings.name;
+          final routeBuilder = appRoutes[routeName];
+          final params = settings.arguments;
+
+          if (routeBuilder != null) {
+            return MaterialPageRoute(
+              builder: (context) => routeBuilder(context, params),
+            );
+          }
+
+          throw Exception("Route '$routeName' không được định nghĩa trong appRoutes");
+        },
       ),
     );
   }

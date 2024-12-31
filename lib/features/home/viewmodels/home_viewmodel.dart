@@ -83,7 +83,7 @@ class HomeViewModel with ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
 
-    print(criteria);
+
     final vinNo = criteria['search'] ?? '';
     final fromDate = criteria['from_date'] ?? '';
     final toDate = criteria['to_date'] ?? '';
@@ -94,7 +94,7 @@ class HomeViewModel with ChangeNotifier {
       final response = await _baseService.get(
         'job/search?page=$_currentPage&search=$vinNo&from_date=$fromDate&to_date=$toDate&status=$jobStatus',
       );
-      print(criteria);
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['code'] == 0) {

@@ -52,7 +52,6 @@ class AuthService {
       body: body,
     );
 
-    print(response);
     if (response.statusCode == 200) {
       return json.decode(response.body);
     } else {

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:iov_app/features/profile/profilemodels/profile_model.dart';
 import 'app.dart';
 import 'core/utils/storage_util.dart';
 import 'package:provider/provider.dart';
 
 import 'features/home/viewmodels/home_viewmodel.dart';
+import 'features/kpi/screenmodels/kpi_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,7 +23,8 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => HomeViewModel()),
-        // Thêm các ViewModel khác nếu cần
+        ChangeNotifierProvider(create: (_) => ProfileModel()),
+        ChangeNotifierProvider(create: (_) => KpiModel()..loadFakeData())
       ],
       child: const App(),
     );
