@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:iov_app/features/home/widgets/search_modal.dart';
 
-
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final void Function(Map<String, String>) onSearch;
+  final Function(Map<String, dynamic>) onSearch; // Callback truyền dữ liệu tìm kiếm
+  final VoidCallback onRefresh; // Callback khi nhấn refresh
 
-  const CustomAppBar({Key? key, required this.onSearch}) : super(key: key);
-
+  const CustomAppBar({
+    Key? key,
+    required this.onSearch,
+    required this.onRefresh,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -16,8 +19,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       leading: IconButton(
         icon: const Icon(Icons.menu, color: Colors.black),
         onPressed: () {
-          // Mở Drawer
-          Scaffold.of(context).openDrawer();
+          Scaffold.of(context).openDrawer(); // Mở Drawer
         },
       ),
       title: Row(
@@ -43,51 +45,25 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         // Search Icon
         IconButton(
           icon: const Icon(Icons.search, color: Colors.black),
-          onPressed: () {
-            showModalBottomSheet(
+          onPressed: () async {
+            final criteria = await showModalBottomSheet<Map<String, dynamic>>(
               context: context,
               isScrollControlled: true,
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
-              builder: (_) => SearchModal(onSearch: onSearch),
+              builder: (_) => const SearchModal(), // Hiển thị modal tìm kiếm
             );
+
+            if (criteria != null) {
+              onSearch(criteria); // Truyền dữ liệu tìm kiếm ra ngoài
+            }
           },
         ),
-        // Refresh Icon with Badge
-        Stack(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.refresh, color: Colors.black),
-              onPressed: () {
-
-              },
-            ),
-            Positioned(
-              right: 8,
-              top: 8,
-              child: Container(
-                padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                constraints: const BoxConstraints(
-                  minWidth: 16,
-                  minHeight: 16,
-                ),
-                child: const Text(
-                  '1',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-          ],
+        // Refresh Icon
+        IconButton(
+          icon: const Icon(Icons.refresh, color: Colors.black),
+          onPressed: onRefresh, // Gọi callback refresh
         ),
       ],
     );

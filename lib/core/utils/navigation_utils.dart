@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../routes/route_state.dart';
 import '../../routes/routes.dart';
 import 'package:iov_app/routes/routes.dart'; // File chứa appRoutes
+import 'package:provider/provider.dart';
 
 void navigateToRouteWithAnimationTo({
   required BuildContext context,
@@ -13,6 +15,7 @@ void navigateToRouteWithAnimationTo({
   final routeBuilder = appRoutes[routeName];
 
   if (routeBuilder != null) {
+    Provider.of<RouteState>(context, listen: false).setCurrentRoute(routeName);
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
@@ -46,6 +49,7 @@ void navigateToRouteWithAnimationBack({
   final routeBuilder = appRoutes[routeName];
 
   if (routeBuilder != null) {
+    Provider.of<RouteState>(context, listen: false).setCurrentRoute(routeName);
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(

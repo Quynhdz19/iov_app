@@ -1,50 +1,35 @@
+import 'dart:convert';
 import 'package:flutter/cupertino.dart';
+import '../../../core/services/base_service.dart';
 
 class KpiModel with ChangeNotifier {
-  String jobNo;
-  String jobName;
-  String status;
-  String assignedTo;
-  String deadline;
+  final BaseService _baseService = BaseService();
 
-  // Constructor chính
-  KpiModel({
-    this.jobNo = '',
-    this.jobName = '',
-    this.status = '',
-    this.assignedTo = '',
-    this.deadline = '',
-  });
+  bool isLoading = false;
+  String? errorMessage;
+  Map<String, dynamic> kpiData = {};
 
-  // Fake data
-  List<KpiModel> fakeData() {
-    return [
-      KpiModel(
-        jobNo: 'J001',
-        jobName: 'Install Camera',
-        status: 'Completed',
-        assignedTo: 'John Doe',
-        deadline: '2024-01-05',
-      ),
-      KpiModel(
-        jobNo: 'J002',
-        jobName: 'Fix GPS',
-        status: 'Pending',
-        assignedTo: 'Jane Smith',
-        deadline: '2024-01-10',
-      ),
-      KpiModel(
-        jobNo: 'J003',
-        jobName: 'Update Software',
-        status: 'In Progress',
-        assignedTo: 'Tom Brown',
-        deadline: '2024-01-15',
-      ),
-    ];
-  }
-
-  // Hàm để load dữ liệu giả
-  void loadFakeData() {
+  Future<void> fetchJobs() async {
+    isLoading = true;
+    errorMessage = null;
     notifyListeners();
+    print("kpiData");
+    try {
+      final response = await _baseService.get('report/technician-kpi');
+
+      final data = json.decode(response.body);
+      if (data['code'] == 0) {
+        kpiData = data['data'] ?? {};
+        print("kpiData $kpiData");
+      } else {
+        errorMessage = data['message'] ?? 'Lỗi không xác định';
+      }
+
+    } catch (e) {
+      errorMessage = 'Lỗi kết nối: $e';
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 }

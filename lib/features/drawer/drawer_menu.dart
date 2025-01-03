@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:iov_app/core/constants/app_colors.dart';
 import '../../../core/local/app_localizations.dart';
 import '../../core/utils/navigation_utils.dart';
+import 'package:provider/provider.dart';
+
+import '../../routes/route_state.dart';
 
 class DrawerMenu extends StatelessWidget {
   final String userEmail;
@@ -10,10 +13,11 @@ class DrawerMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currentRoute = Provider.of<RouteState>(context).currentRoute ?? '/home';
+    
     return Drawer(
       child: Column(
         children: [
-          // Header với Logo và Tiêu đề
           DrawerHeader(
             child: Row(
               children: [
@@ -34,41 +38,51 @@ class DrawerMenu extends StatelessWidget {
               ],
             ),
           ),
-          // Danh sách các mục menu
           ListTile(
             leading: const Icon(Icons.assignment),
             title: Text(AppLocalizations.of(context).translate('inspections')),
+            selected: currentRoute == '/home',
+            selectedTileColor: AppColors.primaryColor.withOpacity(0.2),
             onTap: () {
-              navigateToRouteWithAnimationTo(
-                context:  context,
-                routeName:'/home',
-              );
+              if (currentRoute != '/home') {
+                navigateToRouteWithAnimationTo(
+                  context: context,
+                  routeName: '/home',
+                );
+              }
             },
           ),
           ListTile(
             leading: const Icon(Icons.stacked_bar_chart),
             title: Text(AppLocalizations.of(context).translate('Kpi')),
+            selected: currentRoute == '/kpi',
+            selectedTileColor: AppColors.primaryColor.withOpacity(0.2),
             onTap: () {
-              navigateToRouteWithAnimationTo(
-                context:  context,
-                routeName:'/kpi',
-              );
+              if (currentRoute != '/kpi') {
+                navigateToRouteWithAnimationTo(
+                  context: context,
+                  routeName: '/kpi',
+                );
+              }
             },
           ),
           const Spacer(),
-          // Phần Tài khoản Email
           ListTile(
             leading: const CircleAvatar(
               backgroundColor: Colors.green,
               child: Icon(Icons.person, color: Colors.white),
             ),
             title: Text(userEmail),
+            selected: currentRoute == '/detailsScreen',
+            selectedTileColor: AppColors.primaryColor.withOpacity(0.2),
             trailing: const Icon(Icons.keyboard_arrow_down),
             onTap: () {
-              navigateToRouteWithAnimationTo(
-                  context:  context,
-                  routeName:'/detailsScreen',
-              );
+              if (currentRoute != '/detailsScreen') {
+                navigateToRouteWithAnimationTo(
+                  context: context,
+                  routeName: '/detailsScreen',
+                );
+              }
             },
           ),
         ],

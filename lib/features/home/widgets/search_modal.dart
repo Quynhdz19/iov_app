@@ -1,23 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:iov_app/features/home/widgets/searchStatusInput.dart';
+import '../../../core/local/app_localizations.dart';
 import '../constants/job_status.dart';
 
 class SearchModal extends StatefulWidget {
-  final void Function(Map<String, String>) onSearch;
-  final String? initialVinNo;
-  final String? initialFromDate;
-  final String? initialToDate;
-  final String? initialJobStatus;
-
-  const SearchModal({
-    Key? key,
-    required this.onSearch,
-    this.initialVinNo,
-    this.initialFromDate,
-    this.initialToDate,
-    this.initialJobStatus,
-  }) : super(key: key);
+  const SearchModal({Key? key}) : super(key: key);
 
   @override
   _SearchModalState createState() => _SearchModalState();
@@ -27,16 +16,13 @@ class _SearchModalState extends State<SearchModal> {
   late TextEditingController vinNoController;
   late TextEditingController fromDateController;
   late TextEditingController toDateController;
-  String? selectedJobStatus;
+  List<String> selectedStatusJobs = [];
+  String? toDateError;
 
   @override
   void initState() {
     super.initState();
-    // Khởi tạo controller với giá trị ban đầu
-    vinNoController = TextEditingController(text: widget.initialVinNo);
-    fromDateController = TextEditingController(text: widget.initialFromDate);
-    toDateController = TextEditingController(text: widget.initialToDate);
-    selectedJobStatus = widget.initialJobStatus;
+    _loadSavedState();
   }
 
   @override
@@ -47,10 +33,60 @@ class _SearchModalState extends State<SearchModal> {
     super.dispose();
   }
 
+  Future<void> _loadSavedState() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      vinNoController = TextEditingController(text: prefs.getString('vinNo') ?? '');
+      fromDateController = TextEditingController(text: prefs.getString('fromDate') ?? '');
+      toDateController = TextEditingController(text: prefs.getString('toDate') ?? '');
+      selectedStatusJobs = prefs.getStringList('selectedStatusJobs') ?? [];
+    });
+  }
+
+
+  Future<void> _saveState() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('vinNo', vinNoController.text);
+    prefs.setString('fromDate', fromDateController.text);
+    prefs.setString('toDate', toDateController.text);
+    prefs.setStringList('selectedStatusJobs', selectedStatusJobs);
+  }
+
+  Future<void> conditions() async {
+    if (!_validateDates()) {
+      // Nếu ngày không hợp lệ, dừng lại
+      return;
+    }
+    await _saveState();
+    final Map<String, dynamic> formData = {
+      'search': vinNoController.text,
+      'from_date': fromDateController.text,
+      'to_date': toDateController.text,
+      'status': (selectedStatusJobs.isNotEmpty) ? selectedStatusJobs.join(", ") : '',
+    };
+    Navigator.pop(context, formData); // Trả về dữ liệu cho màn hình cha
+  }
+
+  bool _validateDates() {
+    if (fromDateController.text.isNotEmpty && toDateController.text.isNotEmpty) {
+      final fromDate = DateTime.parse(fromDateController.text);
+      final toDate = DateTime.parse(toDateController.text);
+      if (toDate.isBefore(fromDate)) {
+        setState(() {
+          toDateError = AppLocalizations.of(context).translate('error_condition_search');
+        });
+        return false;
+      }
+    }
+    setState(() {
+      toDateError = null;
+    });
+    return true;
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    const jobStatusList = JobStatus.values;
-
     return Padding(
       padding: EdgeInsets.only(
         left: 16,
@@ -64,10 +100,10 @@ class _SearchModalState extends State<SearchModal> {
           // VIN Number
           TextField(
             controller: vinNoController,
-            decoration: const InputDecoration(
-              labelText: 'VIN Number',
-              prefixIcon: Icon(Icons.directions_car),
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context).translate('vin_number'),
+              prefixIcon: const Icon(Icons.directions_car),
+              border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 16),
@@ -75,10 +111,10 @@ class _SearchModalState extends State<SearchModal> {
           TextField(
             controller: fromDateController,
             readOnly: true,
-            decoration: const InputDecoration(
-              labelText: 'From Date',
-              prefixIcon: Icon(Icons.date_range),
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context).translate('from_date'),
+              prefixIcon: const Icon(Icons.date_range),
+              border: const OutlineInputBorder(),
             ),
             onTap: () async {
               final pickedDate = await showDatePicker(
@@ -89,8 +125,8 @@ class _SearchModalState extends State<SearchModal> {
               );
               if (pickedDate != null) {
                 setState(() {
-                  fromDateController.text =
-                      DateFormat('yyyy-MM-dd').format(pickedDate);
+                  fromDateController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
+                  _validateDates();
                 });
               }
             },
@@ -100,10 +136,11 @@ class _SearchModalState extends State<SearchModal> {
           TextField(
             controller: toDateController,
             readOnly: true,
-            decoration: const InputDecoration(
-              labelText: 'To Date',
-              prefixIcon: Icon(Icons.date_range),
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context).translate('to_date'),
+              prefixIcon: const Icon(Icons.date_range),
+              border: const OutlineInputBorder(),
+              errorText: toDateError,
             ),
             onTap: () async {
               final pickedDate = await showDatePicker(
@@ -114,31 +151,24 @@ class _SearchModalState extends State<SearchModal> {
               );
               if (pickedDate != null) {
                 setState(() {
-                  toDateController.text =
-                      DateFormat('yyyy-MM-dd').format(pickedDate);
+                  toDateController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
+                  _validateDates();
                 });
               }
             },
           ),
           const SizedBox(height: 16),
           // Job Status
-          DropdownButtonFormField<String>(
-            value: selectedJobStatus,
-            items: jobStatusList
-                .map((status) => DropdownMenuItem<String>(
-              value: status,
-              child: Text(status),
-            ))
-                .toList(),
-            onChanged: (value) {
+          SearchStatusInput(
+            label: AppLocalizations.of(context).translate('job_status'),
+            options: JobStatus.values,
+            initialSelectedItems: selectedStatusJobs.join(", "),
+            notEditing: false,
+            onChanged: (selectedValues) {
               setState(() {
-                selectedJobStatus = value;
+                selectedStatusJobs = selectedValues;
               });
             },
-            decoration: const InputDecoration(
-              labelText: 'Job Status',
-              border: OutlineInputBorder(),
-            ),
           ),
           const SizedBox(height: 24),
           // Buttons
@@ -148,37 +178,48 @@ class _SearchModalState extends State<SearchModal> {
               Expanded(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     backgroundColor: Colors.grey[300],
+                    elevation: 0,
                   ),
                   onPressed: () {
                     setState(() {
                       vinNoController.clear();
                       fromDateController.clear();
                       toDateController.clear();
-                      selectedJobStatus = null;
+                      selectedStatusJobs = [];
                     });
                   },
-                  child: const Text(
-                    'Clear Conditions',
-                    style: TextStyle(color: Colors.black),
+                  child: Text(
+                    AppLocalizations.of(context).translate('clear_condition'),
+                    style: const TextStyle(color: Colors.black),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               // Search Button
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
-                    final searchCriteria = {
-                      'search': vinNoController.text,
-                      'from_date': fromDateController.text,
-                      'to_date': toDateController.text,
-                      'status': selectedJobStatus ?? '',
-                    };
-                    widget.onSearch(searchCriteria); // Truyền giá trị cho callback
-                    Navigator.pop(context); // Đóng modal
-                  },
-                  child: const Text('Search'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    backgroundColor: Colors.green,
+                    elevation: 2,
+                  ),
+                  onPressed: conditions,
+                  child: Text(
+                    AppLocalizations.of(context).translate('search_list'),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             ],

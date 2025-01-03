@@ -78,7 +78,7 @@ class HomeViewModel with ChangeNotifier {
     }
   }
 
-  Future<void> fetchJobsWithCriteria(Map<String, String> criteria) async {
+  Future<void> fetchJobsWithCriteria(Map<String, dynamic> criteria) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();

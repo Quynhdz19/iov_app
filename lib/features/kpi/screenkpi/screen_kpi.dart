@@ -1,22 +1,28 @@
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
+import '../../../core/local/app_localizations.dart';
 import '../../drawer/drawer_menu.dart';
+import '../screenmodels/kpi_model.dart';
 
-class KpiJobScreen extends StatelessWidget {
+class KpiJobScreen extends StatefulWidget {
   const KpiJobScreen({Key? key}) : super(key: key);
 
   @override
+  _KpiJobScreenState createState() => _KpiJobScreenState();
+}
+
+class _KpiJobScreenState extends State<KpiJobScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<KpiModel>(context, listen: false).fetchJobs();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Dữ liệu KPI mẫu
-    final Map<String, dynamic> kpiData = {
-      "daily": {"actual": 0, "plan": 10},
-      "last_3_months": [
-        {"actual": 0, "month_no": 10, "plan": 0},
-        {"actual": 0, "month_no": 11, "plan": 0},
-        {"actual": 0, "month_no": 12, "plan": 0},
-      ],
-      "monthly": {"actual": 0, "plan": 10},
-    };
+    final kpiModel = Provider.of<KpiModel>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -34,7 +40,7 @@ class KpiJobScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              // Xử lý làm mới
+              kpiModel.fetchJobs();
             },
           ),
         ],
@@ -42,51 +48,75 @@ class KpiJobScreen extends StatelessWidget {
       drawer: const DrawerMenu(userEmail: 'balloon28th@gmail.com'),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
+        child: kpiModel.isLoading
+            ? const Center(
+          child: CircularProgressIndicator(),
+        )
+            : kpiModel.errorMessage != null
+            ? Center(
+          child: Text(
+            kpiModel.errorMessage!,
+            style: const TextStyle(color: Colors.red),
+          ),
+        )
+            : kpiModel.kpiData.isEmpty
+            ? Center(
+          child: Text(
+              AppLocalizations.of(context).translate('not_found_kpi'),
+            style: TextStyle(fontSize: 18, color: Colors.grey),
+          ),
+        )
+            : Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Tổng quan',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            Text(
+              AppLocalizations.of(context).translate('overview'),
+              style: TextStyle(
+                  fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            // KPI Cards
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildKpiCard(
                   icon: Icons.library_books,
-                  label: "daily",
-                  value: "6",
+                  label: AppLocalizations.of(context).translate('daily_kpi'),
+                  actual: kpiModel.kpiData["daily"]?["actual"] ?? 0,
+                  plan: kpiModel.kpiData["daily"]?["plan"] ?? 0,
                   color: Colors.blue.shade100,
                 ),
                 _buildKpiCard(
-                  icon: Icons.school,
-                  label: "monthly",
-                  value: "3",
+                  icon: Icons.stacked_bar_chart,
+                  label: AppLocalizations.of(context).translate('monthly_kpi'),
+                  actual: kpiModel.kpiData["monthly"]?["actual"] ?? 0,
+                  plan: kpiModel.kpiData["monthly"]?["plan"] ?? 0,
                   color: Colors.green.shade100,
                 ),
               ],
             ),
             const SizedBox(height: 24),
-            const Text(
-              'Chi tiết KPI',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+             Text(
+              AppLocalizations.of(context).translate('KPI_details'),
+              style: TextStyle(
+                  fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
-                itemCount: kpiData["last_3_months"].length,
+                itemCount: (kpiModel.kpiData["last_3_months"] ?? [])
+                    .length,
                 itemBuilder: (context, index) {
-                  final monthData = kpiData["last_3_months"][index];
+                  final monthData =
+                  kpiModel.kpiData["last_3_months"][index];
                   return Card(
                     child: ListTile(
                       title: Text(
-                        "Tháng ${monthData['month_no']}",
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        "${AppLocalizations.of(context).translate('Month')} ${monthData['month_no']}",
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold),
                       ),
                       subtitle: Text(
-                        "Kế hoạch: ${monthData['plan']} | Thực tế: ${monthData['actual']}",
+                        "${AppLocalizations.of(context).translate('Plan')}: ${monthData['plan']} | ${AppLocalizations.of(context).translate('Reality')}: ${monthData['actual']}",
                       ),
                       leading: Icon(
                         Icons.bar_chart,
@@ -106,7 +136,8 @@ class KpiJobScreen extends StatelessWidget {
   Widget _buildKpiCard({
     required IconData icon,
     required String label,
-    required String value,
+    required int actual,
+    required int plan,
     required Color color,
   }) {
     return Expanded(
@@ -124,13 +155,15 @@ class KpiJobScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               label,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              style:
+              const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              value,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              "$actual / $plan",
+              style: const TextStyle(
+                  fontSize: 24, fontWeight: FontWeight.bold),
             ),
           ],
         ),

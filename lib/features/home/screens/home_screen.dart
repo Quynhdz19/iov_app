@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/local/app_localizations.dart';
 import '../../drawer/drawer_menu.dart';
 import '../viewmodels/home_viewmodel.dart';
 import '../widgets/custom_app_bar.dart';
@@ -35,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _onSearch(Map<String, String> criteria) {
+  void _onSearch(Map<String, dynamic> criteria) {
     setState(() {
       vinNo = criteria['search'];
       fromDate = criteria['from_date'];
@@ -52,12 +53,24 @@ class _HomeScreenState extends State<HomeScreen> {
     final homeViewModel = Provider.of<HomeViewModel>(context);
 
     return Scaffold(
-      appBar: CustomAppBar(onSearch: _onSearch),
+      appBar: CustomAppBar(
+        onSearch: _onSearch,
+        onRefresh: () async {
+          await homeViewModel.fetchJobs();
+        },
+      ),
       drawer: const DrawerMenu(userEmail: 'balloon28th@gmail.com'),
       body: Stack(
         children: [
           if (!homeViewModel.isLoading && homeViewModel.errorMessage == null)
-            ListView.builder(
+            homeViewModel.groupedJobs.isEmpty
+                ? Center(
+              child: Text(
+                AppLocalizations.of(context).translate('not_found'),
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+            )
+                : ListView.builder(
               controller: _scrollController,
               itemCount: homeViewModel.groupedJobs.length +
                   (homeViewModel.isFetchingMore ? 1 : 0),
@@ -118,10 +131,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           if (homeViewModel.isLoading)
             Container(
-              color: Colors.black.withOpacity(0.5), // Màn che nền mờ
+              color: Colors.black.withOpacity(0.5),
               child: const Center(
                 child: CircularProgressIndicator(
-                  color: Colors.green, // Hiệu ứng loading màu xanh lá cây
+                  color: Colors.green,
                 ),
               ),
             ),
@@ -135,11 +148,5 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
   }
 }
