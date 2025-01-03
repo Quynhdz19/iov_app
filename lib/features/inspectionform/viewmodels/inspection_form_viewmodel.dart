@@ -43,4 +43,19 @@ class InspectionFormViewmodel with ChangeNotifier {
     }
   }
 
+  Future<bool> doneJobs(int id) async {
+    Map<String, dynamic> updatedData = {};
+    try {
+      final response = await _baseService.post('job/finish-installation/$id', updatedData);
+      final data = json.decode(response.body);
+      if (data['code'] == 0) {
+        return true;
+      }
+    } catch (e) {
+      debugPrint('Error done job : $e');
+    }
+    return false;
+  }
+
+
 }

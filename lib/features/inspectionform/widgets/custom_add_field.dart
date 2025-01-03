@@ -5,6 +5,7 @@ class CustomAddField extends StatefulWidget {
   final List<String> options;
   final Function(List<String>) onChanged;
   final String? initialSelectedItems;
+  final bool notEditing;
 
   const CustomAddField({
     Key? key,
@@ -12,6 +13,7 @@ class CustomAddField extends StatefulWidget {
     required this.options,
     required this.onChanged,
     this.initialSelectedItems,
+    required this.notEditing,
   }) : super(key: key);
 
   @override
@@ -34,6 +36,9 @@ class _CustomAddFieldState extends State<CustomAddField> {
   }
 
   void _openSelectionDialog() async {
+    if (widget.notEditing) {
+      return;
+    }
     final result = await showDialog<List<String>>(
       context: context,
       builder: (BuildContext context) {
@@ -65,7 +70,7 @@ class _CustomAddFieldState extends State<CustomAddField> {
                           prefixIcon: const Icon(Icons.search),
                           hintText: "Search...",
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8.0),
+                            borderRadius: BorderRadius.circular(4.0),
                           ),
                         ),
                       ),
@@ -157,7 +162,7 @@ class _CustomAddFieldState extends State<CustomAddField> {
                 padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8.0),
+                  borderRadius: BorderRadius.circular(4.0),
                 ),
                 child: Text(
                   selectedItems.isEmpty ? "" : selectedItems.join(", "),

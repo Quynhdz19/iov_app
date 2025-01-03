@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../core/constants/job_status.dart';
+import '../constants/job_status.dart';
 
 class SearchModal extends StatefulWidget {
   final void Function(Map<String, String>) onSearch;

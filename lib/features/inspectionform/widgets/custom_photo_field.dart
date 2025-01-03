@@ -6,13 +6,15 @@ import 'package:permission_handler/permission_handler.dart';
 class CustomPhotoField extends StatefulWidget {
   final String label;
   final String? imageUrl; // URL từ API
-  final Function(File?, bool) onImageChanged; // Callback để trả về File và trạng thái xóa
+  final Function(File?, bool) onImageChanged;
+  final bool notEditing;
 
   const CustomPhotoField({
     Key? key,
     required this.label,
     this.imageUrl,
     required this.onImageChanged,
+    required this.notEditing,
   }) : super(key: key);
 
   @override
@@ -32,6 +34,8 @@ class _CustomPhotoFieldState extends State<CustomPhotoField> {
   }
 
   Future<void> _pickImage() async {
+    if (widget.notEditing) return; // Chặn thao tác nếu không phải chế độ chỉnh sửa
+
     final ImagePicker picker = ImagePicker();
 
     // Kiểm tra quyền camera và thư viện ảnh
@@ -79,13 +83,14 @@ class _CustomPhotoFieldState extends State<CustomPhotoField> {
   }
 
   void _deleteImage() {
+    if (widget.notEditing) return; // Chặn thao tác nếu không phải chế độ chỉnh sửa
+
     setState(() {
       _image = null; // Xóa ảnh file
       _imageUrl = null; // Xóa URL ảnh
       _isDeleted = true; // Đặt cờ xóa
     });
 
-    print("_isDeleted ${_isDeleted}");
     widget.onImageChanged(null, _isDeleted); // Gửi trạng thái xóa ra ngoài
   }
 
@@ -110,15 +115,15 @@ class _CustomPhotoFieldState extends State<CustomPhotoField> {
             child: Column(
               children: [
                 InkWell(
-                  onTap: _pickImage, // Mở máy ảnh khi bấm vào ô input
+                  onTap: widget.notEditing ? null : _pickImage, // Vô hiệu hóa nếu không phải chế độ chỉnh sửa
                   child: Container(
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey), // Thêm viền
-                      borderRadius: BorderRadius.circular(8.0), // Bo góc
+                      borderRadius: BorderRadius.circular(4.0), // Bo góc
                     ),
                     child: _image != null
                         ? ClipRRect(
-                      borderRadius: BorderRadius.circular(8.0),
+                      borderRadius: BorderRadius.circular(4.0),
                       child: Image.file(
                         _image!,
                         fit: BoxFit.cover,
@@ -127,7 +132,7 @@ class _CustomPhotoFieldState extends State<CustomPhotoField> {
                     )
                         : _imageUrl != null && _imageUrl!.isNotEmpty
                         ? ClipRRect(
-                      borderRadius: BorderRadius.circular(8.0),
+                      borderRadius: BorderRadius.circular(4.0),
                       child: Image.network(
                         _imageUrl!,
                         fit: BoxFit.cover,
@@ -142,7 +147,8 @@ class _CustomPhotoFieldState extends State<CustomPhotoField> {
                     ),
                   ),
                 ),
-                if (_image != null || (_imageUrl != null && _imageUrl!.isNotEmpty))
+                if (!widget.notEditing &&
+                    (_image != null || (_imageUrl != null && _imageUrl!.isNotEmpty)))
                   TextButton(
                     onPressed: _deleteImage, // Xóa ảnh
                     child: const Text(

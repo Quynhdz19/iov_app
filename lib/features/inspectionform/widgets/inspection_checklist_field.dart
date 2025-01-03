@@ -12,11 +12,13 @@ class CAR_PARAMETER_STATUS {
 class InspectionChecklistWidget extends StatefulWidget {
   final String label;
   final InspectionChecklistController controller;
+  final bool notEditing;
 
   const InspectionChecklistWidget({
     Key? key,
     required this.label,
     required this.controller,
+    required this.notEditing,
   }) : super(key: key);
 
   @override
@@ -85,7 +87,9 @@ class _InspectionChecklistWidgetState extends State<InspectionChecklistWidget> {
 
   Widget _buildButton({required String label, required bool isSelected}) {
     return OutlinedButton(
-      onPressed: () {
+      onPressed: widget.notEditing
+          ? null // Nếu `notEditing` là `true`, vô hiệu hóa nút bấm
+          : () {
         setState(() {
           widget.controller.updateStatus(label);
         });
@@ -106,7 +110,11 @@ class _InspectionChecklistWidgetState extends State<InspectionChecklistWidget> {
         label,
         style: TextStyle(
           fontSize: 12,
-          color: isSelected ? Colors.blue : Colors.black,
+          color: isSelected
+              ? Colors.blue
+              : widget.notEditing
+              ? Colors.grey // Nếu `notEditing`, đổi màu chữ thành xám
+              : Colors.black,
         ),
       ),
     );

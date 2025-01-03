@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class CustomDatePicker extends StatefulWidget {
   final String label;
   final TextEditingController controller; // Nhận controller từ bên ngoài
+  final bool notEditing;
 
   const CustomDatePicker({
     Key? key,
     required this.label,
     required this.controller,
+    required this.notEditing,
   }) : super(key: key);
 
   @override
@@ -40,7 +42,9 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
               ),
               readOnly: true,
               onTap: () async {
-                // Hiển thị hộp thoại chọn ngày
+                if (widget.notEditing) {
+                  return;
+                }
                 DateTime? pickedDate = await showDatePicker(
                   context: context,
                   initialDate: DateTime.now(),
@@ -48,7 +52,6 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                   lastDate: DateTime(2100),
                 );
                 if (pickedDate != null) {
-                  // Cập nhật giá trị trong controller
                   widget.controller.text = "${pickedDate.toLocal()}".split(' ')[0];
                 }
               },

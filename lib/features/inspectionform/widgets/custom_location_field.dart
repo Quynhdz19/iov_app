@@ -3,8 +3,14 @@ import 'package:flutter/material.dart';
 class CustomLocationField extends StatelessWidget {
   final String label;
   final TextEditingController controller;
+  final bool notEditing;
 
-  const CustomLocationField({Key? key, required this.label, required this.controller}) : super(key: key);
+  const CustomLocationField({
+    Key? key,
+    required this.label,
+    required this.controller,
+    required this.notEditing,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -23,11 +29,14 @@ class CustomLocationField extends StatelessWidget {
           const SizedBox(width: 8), // Khoảng cách giữa label và ô nhập
           // Ô nhập
           Expanded(
-            child: TextFormField(
-              controller: controller,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                suffixIcon: Icon(Icons.location_on),
+            child: AbsorbPointer(
+              absorbing: notEditing, // Ngăn thao tác khi notEditing là true
+              child: TextFormField(
+                controller: controller,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  suffixIcon: Icon(Icons.location_on),
+                ),
               ),
             ),
           ),

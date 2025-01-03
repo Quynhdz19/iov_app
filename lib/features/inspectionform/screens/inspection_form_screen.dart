@@ -78,10 +78,31 @@ class _InspectionFormState extends State<InspectionFormScreen> {
 
   Map<String, dynamic>? jobDetails;
   bool isLoading = true;
+  bool notEditing = true;
+
   @override
   void initState() {
     super.initState();
     _loadJobDetails();
+  }
+
+  void _toggleEditing() {
+    setState(() {
+      notEditing = !notEditing;
+    });
+  }
+
+  void _confirmCancel()  async {
+    bool confirmed = await Alert.showConfirmDialog(
+      context: context,
+      title: AppLocalizations.of(context).translate('confirm_cancel_title'),
+      content: AppLocalizations.of(context).translate('confirm_cancel_content'),
+    );
+
+    if (confirmed) {
+      _toggleEditing();
+      _loadJobDetails();
+    }
   }
 
   void _loadJobDetails() async {
@@ -89,8 +110,7 @@ class _InspectionFormState extends State<InspectionFormScreen> {
       isLoading = true; // Hiển thị hiệu ứng loading
     });
     final viewModel = Provider.of<InspectionFormViewmodel>(context, listen: false);
-    final details = await viewModel.getDetailJob(1);
-    print("widget.params ${widget.params}");
+    final details = await viewModel.getDetailJob(widget.params);
     if (details != null) {
       setState(() {
         jobDetails = details;
@@ -164,13 +184,14 @@ class _InspectionFormState extends State<InspectionFormScreen> {
     };
 
     // Gửi dữ liệu đến ViewModel
-    bool isSuccess = await Provider.of<InspectionFormViewmodel>(context, listen: false).updateJob(1, formData);
+    bool isSuccess = await Provider.of<InspectionFormViewmodel>(context, listen: false).updateJob(widget.params, formData);
     if (isSuccess) {
       Alert.showOverlay(
         context: context,
         message:  AppLocalizations.of(context).translate('updated_job_success'),
         color: Colors.green,
       );
+      _loadJobDetails();
     } else {
       Alert.showOverlay(
         context: context,
@@ -179,6 +200,30 @@ class _InspectionFormState extends State<InspectionFormScreen> {
       );
     }
   }
+
+  Future<void> finishJob() async {
+    bool isSuccess = await Provider.of<InspectionFormViewmodel>(context, listen: false).doneJobs(widget.params);
+    if (isSuccess) {
+      Alert.showOverlay(
+        context: context,
+        message:  AppLocalizations.of(context).translate('done_job_success'),
+        color: Colors.green,
+      );
+
+      navigateToRouteWithAnimationBack(
+        context: context,
+        routeName: '/home',
+      );
+
+    } else {
+      Alert.showOverlay(
+        context: context,
+        message:  AppLocalizations.of(context).translate('done_job_error'),
+        color: Colors.red,
+      );
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -209,6 +254,7 @@ class _InspectionFormState extends State<InspectionFormScreen> {
                   CustomAddField(label: AppLocalizations.of(context).translate('installation_type'),
                     options: InstallationType.all,
                     initialSelectedItems: jobDetails?['installation_type'],
+                    notEditing: notEditing,
                     onChanged: (selectedValues) {
                       setState(() {
                         selectedInstallationTypes = selectedValues;
@@ -218,21 +264,22 @@ class _InspectionFormState extends State<InspectionFormScreen> {
                   CustomAddField(label: AppLocalizations.of(context).translate('accessories'),
                     options: Accessories.all,
                     initialSelectedItems: jobDetails?['accessories'],
+                    notEditing: notEditing,
                     onChanged: (selectedValues) {
                       setState(() {
                         selectedAccessories = selectedValues;
                       });
                     },),
-                  CustomTextField(label: AppLocalizations.of(context).translate('note'), controller: noteController,),
-                  CustomDatePicker(label: AppLocalizations.of(context).translate('installation_date'), controller: installationDateController,),
-                  CustomLocationField(label: AppLocalizations.of(context).translate('installation_location'), controller: installationLocationController,),
-                  CustomTextField(label: AppLocalizations.of(context).translate('odometer_reading'), controller: odoController,),
+                  CustomTextField(label: AppLocalizations.of(context).translate('note'), controller: noteController, notEditing: notEditing,),
+                  CustomDatePicker(label: AppLocalizations.of(context).translate('installation_date'), controller: installationDateController, notEditing: notEditing,),
+                  CustomLocationField(label: AppLocalizations.of(context).translate('installation_location'), controller: installationLocationController, notEditing: notEditing,),
+                  CustomTextField(label: AppLocalizations.of(context).translate('odometer_reading'), controller: odoController, notEditing: notEditing,),
                   CustomPhotoField(
                     label: AppLocalizations.of(context).translate('accessories_img'),
                     imageUrl: jobDetails?['accessories_img_path'] ?? '',
+                    notEditing: notEditing,
                     onImageChanged: (file, isDeleted) {
                       setState(() {
-                        print("isDeleted $isDeleted");
                         accessoriesImage = file;
                         accessoriesImageDelete = isDeleted;
                       });
@@ -241,6 +288,7 @@ class _InspectionFormState extends State<InspectionFormScreen> {
                   CustomPhotoField(
                     label: AppLocalizations.of(context).translate('front_view'),
                     imageUrl: jobDetails?['front_view_img_path'] ?? '',
+                    notEditing: notEditing,
                     onImageChanged: (file, isDeleted) {
                       setState(() {
                         frontViewImage = file;
@@ -251,6 +299,7 @@ class _InspectionFormState extends State<InspectionFormScreen> {
                   CustomPhotoField(
                     label: AppLocalizations.of(context).translate('back_view'),
                     imageUrl: jobDetails?['back_view_img_path'] ?? '',
+                    notEditing: notEditing,
                     onImageChanged: (file, isDeleted) {
                       setState(() {
                         backViewImage = file;
@@ -261,6 +310,7 @@ class _InspectionFormState extends State<InspectionFormScreen> {
                   CustomPhotoField(
                     label: AppLocalizations.of(context).translate('car_chassis'),
                     imageUrl: jobDetails?['car_chassis_img_path'] ?? '',
+                    notEditing: notEditing,
                     onImageChanged: (file, isDeleted) {
                       setState(() {
                         carChassisImage = file;
@@ -271,6 +321,7 @@ class _InspectionFormState extends State<InspectionFormScreen> {
                   CustomPhotoField(
                     label: AppLocalizations.of(context).translate('gps_devices'),
                     imageUrl: jobDetails?['gps_devices_img_path'] ?? '',
+                    notEditing: notEditing,
                     onImageChanged: (file, isDeleted) {
                       setState(() {
                         gpsDevicesImage = file;
@@ -281,6 +332,7 @@ class _InspectionFormState extends State<InspectionFormScreen> {
                   CustomPhotoField(
                     label: AppLocalizations.of(context).translate('antenna_gps_gsm'),
                     imageUrl: jobDetails?['anten_gps_gsm_img_path'] ?? '',
+                    notEditing: notEditing,
                     onImageChanged: (file, isDeleted) {
                       setState(() {
                         antennaGPSImage = file;
@@ -291,6 +343,7 @@ class _InspectionFormState extends State<InspectionFormScreen> {
                   CustomPhotoField(
                     label: AppLocalizations.of(context).translate('before_installation'),
                     imageUrl: jobDetails?['before_installation_img_path'] ?? '',
+                    notEditing: notEditing,
                     onImageChanged: (file, isDeleted) {
                       setState(() {
                         beforeInstallationImage = file;
@@ -301,6 +354,7 @@ class _InspectionFormState extends State<InspectionFormScreen> {
                   CustomPhotoField(
                     label: AppLocalizations.of(context).translate('after_installation'),
                     imageUrl: jobDetails?['after_installation_img_path'] ?? '',
+                    notEditing: notEditing,
                     onImageChanged: (file, isDeleted) {
                       setState(() {
                         afterInstallationImage = file;
@@ -311,6 +365,7 @@ class _InspectionFormState extends State<InspectionFormScreen> {
                   CustomPhotoField(
                     label: AppLocalizations.of(context).translate('additional_equipment_1'),
                     imageUrl: jobDetails?['additional_equipment_img1_path'] ?? '',
+                    notEditing: notEditing,
                     onImageChanged: (file, isDeleted) {
                       setState(() {
                         additionalEquipmentImg1 = file;
@@ -321,6 +376,7 @@ class _InspectionFormState extends State<InspectionFormScreen> {
                   CustomPhotoField(
                     label: AppLocalizations.of(context).translate('additional_equipment_2'),
                     imageUrl: jobDetails?['additional_equipment_img2_path'] ?? '',
+                    notEditing: notEditing,
                     onImageChanged: (file, isDeleted) {
                       setState(() {
                         additionalEquipmentImg2 = file;
@@ -331,6 +387,7 @@ class _InspectionFormState extends State<InspectionFormScreen> {
                   CustomPhotoField(
                     label: AppLocalizations.of(context).translate('additional_images'),
                     imageUrl: jobDetails?['additional_img_path'] ?? '',
+                    notEditing: notEditing,
                     onImageChanged: (file, isDeleted) {
                       setState(() {
                         print("isDeleted $isDeleted");
@@ -339,11 +396,11 @@ class _InspectionFormState extends State<InspectionFormScreen> {
                       });
                     },
                   ),
-                  InspectionChecklistWidget(label: AppLocalizations.of(context).translate('engine_oil'), controller: engineOilController,),
-                  InspectionChecklistWidget(label: AppLocalizations.of(context).translate('transmission'), controller: transmissionController,),
-                  InspectionChecklistWidget(label: AppLocalizations.of(context).translate('differential'), controller: differentialController,),
-                  CustomTextField(label: AppLocalizations.of(context).translate('notes'), controller: notesController,),
-                  CustomTextField(label: AppLocalizations.of(context).translate('other'), controller: otherController,),
+                  InspectionChecklistWidget(label: AppLocalizations.of(context).translate('engine_oil'), controller: engineOilController, notEditing: notEditing,),
+                  InspectionChecklistWidget(label: AppLocalizations.of(context).translate('transmission'), controller: transmissionController, notEditing: notEditing,),
+                  InspectionChecklistWidget(label: AppLocalizations.of(context).translate('differential'), controller: differentialController, notEditing: notEditing,),
+                  CustomTextField(label: AppLocalizations.of(context).translate('notes'), controller: notesController, notEditing: notEditing,),
+                  CustomTextField(label: AppLocalizations.of(context).translate('other'), controller: otherController, notEditing: notEditing,),
                 ],
               ),
             ),
@@ -360,36 +417,88 @@ class _InspectionFormState extends State<InspectionFormScreen> {
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
+              children: notEditing
+                  ? [
                 // Cancel Button
-                InkWell(
-                  onTap: () {
-                    navigateToRouteWithAnimationBack(
-                      context: context,
-                      routeName: '/home',
-                    );
-                  },
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16.0,
-                      fontWeight: FontWeight.w500,
+                Expanded(
+                  child: InkWell(
+                    onTap: () {
+                      _toggleEditing();
+                    },
+                    child: const Center(
+                      child: Text(
+                        'Edit',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                   ),
                 ),
 
+                const SizedBox(width: 20), // Khoảng cách giữa hai button
+
                 // Save Button
-                InkWell(
-                  onTap: () {
-                    _onSave();
-                  },
-                  child: const Text(
-                    'Save',
-                    style: TextStyle(
-                      color: Colors.green,
-                      fontSize: 16.0,
-                      fontWeight: FontWeight.w500,
+                Expanded(
+                  child: InkWell(
+                    onTap: () {
+                      _toggleEditing();
+                      finishJob();
+                    },
+                    child: const Center(
+                      child: Text(
+                        'Done',
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ]
+                  : [
+                // Cancel Button
+                Expanded(
+                  child: InkWell(
+                    onTap: () {
+                      _confirmCancel();
+                      _toggleEditing();
+                    },
+                    child: const Center(
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 20), // Khoảng cách giữa hai button
+
+                // Save Button
+                Expanded(
+                  child: InkWell(
+                    onTap: () {
+                      _toggleEditing();
+                      _onSave();
+                    },
+                    child: const Center(
+                      child: Text(
+                        'Save',
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                   ),
                 ),
