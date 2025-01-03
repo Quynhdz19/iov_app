@@ -31,7 +31,15 @@ class InspectionItemCard extends StatelessWidget {
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: ListTile(
-          leading: Image.network(imageUrl, width: 50, height: 50, fit: BoxFit.cover),
+          leading: ClipRRect(
+            borderRadius: BorderRadius.circular(8.0), // Bo góc với bán kính 8
+            child: Image.network(
+              imageUrl,
+              width: 50,
+              height: 50,
+              fit: BoxFit.cover,
+            ),
+          ),
           title: Text(vehicleNumber, style: const TextStyle(fontWeight: FontWeight.bold)),
           subtitle: Text(description),
           trailing: IconButton(

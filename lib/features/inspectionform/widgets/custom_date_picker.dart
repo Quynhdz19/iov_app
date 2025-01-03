@@ -2,16 +2,19 @@ import 'package:flutter/material.dart';
 
 class CustomDatePicker extends StatefulWidget {
   final String label;
+  final TextEditingController controller; // Nhận controller từ bên ngoài
 
-  const CustomDatePicker({Key? key, required this.label}) : super(key: key);
+  const CustomDatePicker({
+    Key? key,
+    required this.label,
+    required this.controller,
+  }) : super(key: key);
 
   @override
   _CustomDatePickerState createState() => _CustomDatePickerState();
 }
 
 class _CustomDatePickerState extends State<CustomDatePicker> {
-  final TextEditingController _controller = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -30,7 +33,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
           // TextFormField để chọn ngày
           Expanded(
             child: TextFormField(
-              controller: _controller,
+              controller: widget.controller, // Sử dụng controller từ cha
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 suffixIcon: Icon(Icons.calendar_today),
@@ -45,10 +48,8 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                   lastDate: DateTime(2100),
                 );
                 if (pickedDate != null) {
-                  setState(() {
-                    _controller.text =
-                    "${pickedDate.toLocal()}".split(' ')[0]; // Định dạng ngày
-                  });
+                  // Cập nhật giá trị trong controller
+                  widget.controller.text = "${pickedDate.toLocal()}".split(' ')[0];
                 }
               },
             ),

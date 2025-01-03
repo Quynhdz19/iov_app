@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 class CustomLocationField extends StatelessWidget {
   final String label;
+  final TextEditingController controller;
 
-  const CustomLocationField({Key? key, required this.label}) : super(key: key);
+  const CustomLocationField({Key? key, required this.label, required this.controller}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +24,7 @@ class CustomLocationField extends StatelessWidget {
           // Ô nhập
           Expanded(
             child: TextFormField(
+              controller: controller,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 suffixIcon: Icon(Icons.location_on),

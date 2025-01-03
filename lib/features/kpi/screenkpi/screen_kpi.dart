@@ -1,38 +1,22 @@
 import 'package:flutter/material.dart';
+
 import '../../drawer/drawer_menu.dart';
-import '../screenmodels/kpi_model.dart';
-import '../widgets/job_widget.dart';
 
 class KpiJobScreen extends StatelessWidget {
   const KpiJobScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Mock data cho công việc
-    final List<KpiModel> jobs = [
-      KpiModel(
-        jobNo: 'J001',
-        jobName: 'Install Camera',
-        status: 'Completed',
-        assignedTo: 'John Doe',
-        deadline: '2024-01-05',
-      ),
-      KpiModel(
-        jobNo: 'J002',
-        jobName: 'Fix GPS',
-        status: 'Pending',
-        assignedTo: 'Jane Smith',
-        deadline: '2024-01-10',
-      ),
-      KpiModel(
-        jobNo: 'J003',
-        jobName: 'Update Software',
-        status: 'In Progress',
-        assignedTo: 'Tom Brown',
-        deadline: '2024-01-15',
-      ),
-      // Thêm dữ liệu khác nếu cần
-    ];
+    // Dữ liệu KPI mẫu
+    final Map<String, dynamic> kpiData = {
+      "daily": {"actual": 0, "plan": 10},
+      "last_3_months": [
+        {"actual": 0, "month_no": 10, "plan": 0},
+        {"actual": 0, "month_no": 11, "plan": 0},
+        {"actual": 0, "month_no": 12, "plan": 0},
+      ],
+      "monthly": {"actual": 0, "plan": 10},
+    };
 
     return Scaffold(
       appBar: AppBar(
@@ -59,48 +43,94 @@ class KpiJobScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Thanh tìm kiếm
-            TextField(
-              decoration: InputDecoration(
-                hintText: 'Search Job...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-              ),
-              onChanged: (value) {
-                // Xử lý tìm kiếm
-              },
+            const Text(
+              'Tổng quan',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            // Header bảng
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF8F9FB),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Row(
-                children: [
-                  Expanded(flex: 1, child: Text('Job No', style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(flex: 2, child: Text('Job Name', style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(flex: 1, child: Text('Status', style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(flex: 2, child: Text('Assigned To', style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(flex: 1, child: Text('Deadline', style: TextStyle(fontWeight: FontWeight.bold))),
-                  Icon(Icons.more_vert), // Biểu tượng thêm tùy chọn
-                ],
-              ),
+            // KPI Cards
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildKpiCard(
+                  icon: Icons.library_books,
+                  label: "daily",
+                  value: "6",
+                  color: Colors.blue.shade100,
+                ),
+                _buildKpiCard(
+                  icon: Icons.school,
+                  label: "monthly",
+                  value: "3",
+                  color: Colors.green.shade100,
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            // Danh sách công việc
+            const SizedBox(height: 24),
+            const Text(
+              'Chi tiết KPI',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
-                itemCount: jobs.length,
+                itemCount: kpiData["last_3_months"].length,
                 itemBuilder: (context, index) {
-                  return JobCard(job: jobs[index]);
+                  final monthData = kpiData["last_3_months"][index];
+                  return Card(
+                    child: ListTile(
+                      title: Text(
+                        "Tháng ${monthData['month_no']}",
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        "Kế hoạch: ${monthData['plan']} | Thực tế: ${monthData['actual']}",
+                      ),
+                      leading: Icon(
+                        Icons.bar_chart,
+                        color: Colors.blue.shade700,
+                      ),
+                    ),
+                  );
                 },
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildKpiCard({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Expanded(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4.0),
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 36, color: Colors.blue.shade700),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
           ],
         ),

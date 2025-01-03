@@ -1,5 +1,4 @@
 class JobStatus {
-  static const String NEW = 'New';
   static const String ASSIGNED = 'Assigned';
   static const String FINISHED_INSTALLATION = 'Finished Installation';
   static const String COMPLETED = 'Completed';
@@ -7,7 +6,6 @@ class JobStatus {
   static const String UPDATED = 'Updated';
 
   static const List<String> values = [
-    NEW,
     ASSIGNED,
     FINISHED_INSTALLATION,
     COMPLETED,

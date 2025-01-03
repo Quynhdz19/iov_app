@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 
 class CustomTextField extends StatelessWidget {
   final String label;
+  final TextEditingController controller;
 
-  const CustomTextField({required this.label});
+  const CustomTextField({required this.label, required this.controller,});
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +24,7 @@ class CustomTextField extends StatelessWidget {
           const SizedBox(width: 8), // Khoảng cách giữa label và ô nhập
           Expanded(
             child: TextFormField(
+              controller: controller,
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
               ),

@@ -115,8 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ...items.map((item) {
                 return InspectionItemCard(
                   job_id: item['job_id'],
-                  imageUrl:
-                  'https://file.kelleybluebookimages.com/kbb/base/evox/CP/14385/2021-Kia-Seltos-side_14385_001_2400x1800_GAG.png?crop=1.0xw:0.90xh;left,top&downsize=110:*', // Placeholder image
+                  imageUrl: item['segment_img'],
                   vehicleNumber: item['vin_no'],
                   description: item['job_status'],
                   onTap: () {

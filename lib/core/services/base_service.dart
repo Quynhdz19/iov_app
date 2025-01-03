@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
@@ -65,15 +67,45 @@ class BaseService {
     );
   }
 
-  Future<http.Response> put(String endpoint, Map<String, dynamic> data, {BuildContext? context}) async {
+  Future<http.Response> putJob(String endpoint, Map<String, dynamic> data, {BuildContext? context}) async {
     final url = Uri.parse('$_baseUrl/$endpoint');
     final headers = await _getHeaders(context);
 
-    return await http.put(
-      url,
-      headers: headers,
-      body: json.encode(data),
-    );
+    // Luôn sử dụng MultipartRequest
+    var request = http.MultipartRequest('POST', url);
+    request.headers.addAll(headers..remove('Content-Type')); // Xóa Content-Type để multipart tự xử lý
+
+    // Thêm các fields
+    data.forEach((key, value) {
+      if (value is! File && value != null) {
+        request.fields[key] = value.toString();
+      }
+    });
+
+    // Thêm các files (nếu có)
+    for (var entry in data.entries) {
+      if (entry.value is File) {
+        var file = entry.value as File;
+        if (file.existsSync()) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              entry.key,
+              file.path,
+            ),
+          );
+        } else {
+          print('File ${file.path} does not exist. Skipping.');
+        }
+      }
+    }
+
+    // Log dữ liệu gửi đi
+    print('Fields: ${request.fields}');
+    print('Files: ${request.files.map((file) => file.filename).toList()}');
+
+    // Gửi yêu cầu
+    final streamedResponse = await request.send();
+    return await http.Response.fromStream(streamedResponse);
   }
 
   Future<http.Response> patch(String endpoint, Map<String, dynamic> data, {BuildContext? context}) async {
