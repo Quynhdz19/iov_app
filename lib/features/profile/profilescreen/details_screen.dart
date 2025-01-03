@@ -1,10 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/local/app_localizations.dart';
 import '../../drawer/drawer_menu.dart';
 import '../profilemodels/profile_model.dart';
 
-class DetailsScreen extends StatelessWidget {
+class DetailsScreen extends StatefulWidget {
   const DetailsScreen({super.key});
+
+  @override
+  State<DetailsScreen> createState() => _DetailsScreenState();
+}
+
+class _DetailsScreenState extends State<DetailsScreen> {
+  late Future<void> _profileLoadFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _profileLoadFuture = Provider.of<ProfileModel>(context, listen: false).loadProfileFromToken();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,35 +40,62 @@ class DetailsScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              // Xử lý làm mới
+              setState(() {
+                _profileLoadFuture = userDetails.loadProfileFromToken();
+              });
             },
           ),
         ],
       ),
-      drawer: const DrawerMenu(userEmail: 'balloon28th@gmail.com'),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            CircleAvatar(
-              radius: 60,
-              backgroundColor: Colors.grey.shade300,
-              child: const Icon(
-                Icons.person,
-                size: 80,
-                color: Colors.grey,
+      drawer: const DrawerMenu(),
+      body: FutureBuilder(
+        future: _profileLoadFuture,
+        builder: (context, snapshot) {
+          if (userDetails.isLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                AppLocalizations.of(context).translate('not_found'),
+                style: TextStyle(color: Colors.red),
               ),
+            );
+          }
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 60,
+                  backgroundColor: Colors.grey.shade300,
+                  child: const Icon(
+                    Icons.person,
+                    size: 80,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _buildDetailRow(AppLocalizations.of(context).translate('user_name'), userDetails.name ?? 'N/A'),
+                _buildDetailRow(AppLocalizations.of(context).translate('real_name'), userDetails.realName ?? 'N/A'),
+                _buildDetailRow(AppLocalizations.of(context).translate('nick_name'), userDetails.nickname ?? 'N/A'),
+                _buildDetailRow(AppLocalizations.of(context).translate('Position'), userDetails.position ?? 'N/A'),
+                _buildPhoneRow(AppLocalizations.of(context).translate('phone_number'), userDetails.phoneNumber ?? 'N/A', Icons.call),
+                _buildPhoneRow(
+                  AppLocalizations.of(context).translate('Telephone_reserve'),
+                  userDetails.backupPhoneNumber ?? 'N/A',
+                  Icons.message,
+                ),
+                _buildEmailRow(AppLocalizations.of(context).translate('email'), userDetails.email ?? 'N/A'),
+              ],
             ),
-            const SizedBox(height: 16),
-            _buildDetailRow('User name', userDetails.name ?? 'N/A'),
-            _buildDetailRow('Real name', userDetails.realName ?? 'N/A'),
-            _buildDetailRow('Nick name', userDetails.nickname ?? 'N/A'),
-            _buildDetailRow('Position', userDetails.position ?? 'N/A'),
-            _buildPhoneRow('Phone number', userDetails.phoneNumber ?? 'N/A', Icons.call),
-            _buildPhoneRow('Telephone number (reserve)', userDetails.backupPhoneNumber ?? 'N/A', Icons.message),
-            _buildEmailRow('Email', userDetails.email ?? 'N/A'),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -63,16 +104,26 @@ class DetailsScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
             width: 120,
             child: Text(
               label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
           ),
-          Expanded(child: Text(value)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 16),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
     );
@@ -82,16 +133,25 @@ class DetailsScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
             width: 120,
             child: Text(
               label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
           ),
-          Expanded(child: Text(value)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 16),
+            ),
+          ),
           IconButton(
             onPressed: () {
               // Xử lý hành động (gọi/sms)
@@ -107,16 +167,26 @@ class DetailsScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
             width: 120,
             child: Text(
               label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
           ),
-          Expanded(child: Text(value)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 16),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
           IconButton(
             onPressed: () {
               // Xử lý email

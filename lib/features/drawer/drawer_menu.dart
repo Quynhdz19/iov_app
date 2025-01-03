@@ -1,20 +1,37 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:iov_app/core/constants/app_colors.dart';
-import '../../../core/local/app_localizations.dart';
-import '../../core/utils/navigation_utils.dart';
+import 'package:iov_app/core/local/app_localizations.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/utils/navigation_utils.dart';
 import '../../routes/route_state.dart';
+import '../../core/utils/storage_util.dart';
 
 class DrawerMenu extends StatelessWidget {
-  final String userEmail;
+  const DrawerMenu({Key? key}) : super(key: key);
 
-  const DrawerMenu({Key? key, required this.userEmail}) : super(key: key);
+  Future<String> _getUserEmail() async {
+    final accessToken = await StorageUtil.getString('access_token');
+    if (accessToken != null) {
+      try {
+        final payload = accessToken.split('.')[1]; // Lấy phần payload từ JWT
+        final normalizedPayload = base64.normalize(payload);
+        final decodedPayload = utf8.decode(base64.decode(normalizedPayload));
+        final payloadMap = json.decode(decodedPayload);
+        return payloadMap['email'] ?? 'Unknown Email';
+      } catch (e) {
+        return 'Invalid Token';
+      }
+    }
+    return 'No Access Token';
+  }
 
   @override
   Widget build(BuildContext context) {
     final currentRoute = Provider.of<RouteState>(context).currentRoute ?? '/home';
-    
+
     return Drawer(
       child: Column(
         children: [
@@ -67,22 +84,33 @@ class DrawerMenu extends StatelessWidget {
             },
           ),
           const Spacer(),
-          ListTile(
-            leading: const CircleAvatar(
-              backgroundColor: Colors.green,
-              child: Icon(Icons.person, color: Colors.white),
-            ),
-            title: Text(userEmail),
-            selected: currentRoute == '/detailsScreen',
-            selectedTileColor: AppColors.primaryColor.withOpacity(0.2),
-            trailing: const Icon(Icons.keyboard_arrow_down),
-            onTap: () {
-              if (currentRoute != '/detailsScreen') {
-                navigateToRouteWithAnimationTo(
-                  context: context,
-                  routeName: '/detailsScreen',
-                );
-              }
+          FutureBuilder<String>(
+            future: _getUserEmail(),
+            builder: (context, snapshot) {
+              final userEmail = snapshot.data ?? 'Loading...';
+              return ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: Colors.green,
+                  child: Icon(Icons.person, color: Colors.white),
+                ),
+                title: Text(
+                  userEmail,
+                  overflow: TextOverflow.ellipsis, // Hiển thị dấu ... khi quá dài
+                  maxLines: 1, // Giới hạn 1 dòng
+                  style: const TextStyle(color: Colors.black),
+                ),
+                selected: currentRoute == '/detailsScreen',
+                selectedTileColor: AppColors.primaryColor.withOpacity(0.2),
+                trailing: const Icon(Icons.keyboard_arrow_down),
+                onTap: () {
+                  if (currentRoute != '/detailsScreen') {
+                    navigateToRouteWithAnimationTo(
+                      context: context,
+                      routeName: '/detailsScreen',
+                    );
+                  }
+                },
+              );
             },
           ),
         ],

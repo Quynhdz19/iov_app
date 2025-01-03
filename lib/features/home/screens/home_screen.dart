@@ -59,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
           await homeViewModel.fetchJobs();
         },
       ),
-      drawer: const DrawerMenu(userEmail: 'balloon28th@gmail.com'),
+      drawer: const DrawerMenu(),
       body: Stack(
         children: [
           if (!homeViewModel.isLoading && homeViewModel.errorMessage == null)

@@ -45,7 +45,7 @@ class _KpiJobScreenState extends State<KpiJobScreen> {
           ),
         ],
       ),
-      drawer: const DrawerMenu(userEmail: 'balloon28th@gmail.com'),
+      drawer: const DrawerMenu(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: kpiModel.isLoading
